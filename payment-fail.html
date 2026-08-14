@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결제 실패</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><div class="icon">😥</div><h1>결제가 완료되지 않았어요</h1></div>
+  <div class="card" style="text-align:center;">
+    <div class="msg error" style="display:block;" id="reason"></div>
+    <button class="btn" onclick="window.location.href='pay.html'">다시 시도하기</button>
+  </div>
+</div>
+<script>
+const params = new URLSearchParams(window.location.search);
+document.getElementById('reason').textContent = params.get('message') || '결제가 취소되었거나 실패했습니다.';
+</script>
+</body>
+</html>

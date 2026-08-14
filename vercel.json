@@ -1,0 +1,10 @@
+{
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "functions": {
+    "api/confirm-payment.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}

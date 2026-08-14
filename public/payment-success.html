@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결제 확인 중...</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><div class="icon">⏳</div><h1>결제를 확인하고 있어요</h1></div>
+  <div class="card" style="text-align:center;">
+    <div class="msg" id="statusMsg" style="display:block; background:var(--panel2); color:var(--muted);">
+      잠시만 기다려주세요...
+    </div>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script>
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const paymentKey = params.get('paymentKey');
+  const orderId = params.get('orderId');
+  const amount = params.get('amount');
+
+  const session = await requireLogin();
+  if (!session) return;
+
+  const msg = document.getElementById('statusMsg');
+
+  if (!paymentKey || !orderId || !amount) {
+    msg.className = 'msg error';
+    msg.textContent = '결제 정보가 올바르지 않습니다.';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/confirm-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) }),
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      msg.className = 'msg error';
+      msg.textContent = '결제 확인에 실패했습니다: ' + (data.message || '알 수 없는 오류');
+      return;
+    }
+
+    msg.className = 'msg ok';
+    msg.textContent = '결제가 확인되었습니다! 문제은행으로 이동합니다...';
+    setTimeout(() => { window.location.href = 'study.html'; }, 1200);
+  } catch (e) {
+    msg.className = 'msg error';
+    msg.textContent = '오류가 발생했습니다: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>
