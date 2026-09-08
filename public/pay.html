@@ -17,7 +17,7 @@
   </div>
 
   <div class="plan-card">
-    <div class="price">₩9,900 <span>/ 평생 이용</span></div>
+    <div class="price">₩9,900 <span>/ 1년간 이용</span></div>
     <ul class="plan-list">
       <li>과목별 연습모드 전체 문제 풀이</li>
       <li>랜덤 모의고사</li>
@@ -53,8 +53,9 @@ let currentSession;
   if (!currentSession) return;
 
   const { data: profile } = await supabaseClient
-    .from('profiles').select('is_paid').eq('id', currentSession.user.id).single();
-  if (profile && profile.is_paid) { window.location.href = 'study.html'; return; }
+    .from('profiles').select('is_paid, paid_until').eq('id', currentSession.user.id).single();
+  const isActive = profile && profile.paid_until && new Date(profile.paid_until) > new Date();
+  if (isActive) { window.location.href = 'study.html'; return; }
 
   const customerKey = currentSession.user.id;
   paymentWidget = PaymentWidget(TOSS_CLIENT_KEY, customerKey);
