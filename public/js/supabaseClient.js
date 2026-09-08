@@ -5,7 +5,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 로그인 안 된 사용자를 index.html로 보냄
 async function requireLogin() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
@@ -15,18 +14,20 @@ async function requireLogin() {
   return session;
 }
 
-// 로그인 + 결제 여부까지 확인. 결제 안 되어 있으면 pay.html로 보냄
+// 로그인 + "만료되지 않은 결제"인지 확인. 미결제/만료 시 pay.html로 이동
 async function requirePaidMember() {
   const session = await requireLogin();
   if (!session) return null;
 
   const { data: profile, error } = await supabaseClient
     .from("profiles")
-    .select("is_paid, email")
+    .select("is_paid, email, paid_until")
     .eq("id", session.user.id)
     .single();
 
-  if (error || !profile || !profile.is_paid) {
+  const isActive = profile && profile.paid_until && new Date(profile.paid_until) > new Date();
+
+  if (error || !isActive) {
     window.location.href = "pay.html";
     return null;
   }
