@@ -209,8 +209,8 @@ function render() {
   const result = await requirePaidMember(); // 로그인 안됨->index.html, 결제 안됨->pay.html 로 자동 이동
   if (!result) return;
   document.getElementById('topbar').style.display = 'flex';
-  document.getElementById('userEmail').textContent = result.session.user.email;
-  loadProgress();
+  const expiryDate = new Date(result.profile.paid_until).toLocaleDateString('ko-KR');
+  document.getElementById('userEmail').textContent = result.session.user.email + ' · ' + expiryDate + '까지 이용가능';  loadProgress();
 })();
 </script>
 </body>
