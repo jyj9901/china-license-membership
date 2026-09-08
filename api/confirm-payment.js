@@ -6,9 +6,11 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY; // 예: test_sk_... / live_sk_...
+const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // service_role 키 (절대 프론트에 노출 금지)
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const MEMBERSHIP_MONTHS = 12; // 이용 기간 (개월)
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -21,7 +23,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: "필수 파라미터 누락" });
     }
 
-    // 1) 요청한 사용자가 진짜 로그인된 사용자인지 확인 (Authorization 헤더의 access_token)
     const authHeader = req.headers.authorization || "";
     const accessToken = authHeader.replace("Bearer ", "");
     if (!accessToken) {
@@ -35,7 +36,6 @@ export default async function handler(req, res) {
     }
     const userId = userData.user.id;
 
-    // 2) 토스페이먼츠에 결제 승인 요청 (금액 위변조 방지를 위해 서버에서 반드시 재검증)
     const EXPECTED_AMOUNT = 9900; // pay.html의 AMOUNT와 반드시 동일하게 유지
     if (Number(amount) !== EXPECTED_AMOUNT) {
       return res.status(400).json({ success: false, message: "결제 금액이 올바르지 않습니다" });
@@ -56,12 +56,27 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: tossData.message || "토스 결제 승인 실패" });
     }
 
-    // 3) 결제 승인 성공 -> 회원의 is_paid 를 true로 업데이트
+    // 기존 만료일이 아직 안 지났다면 그 시점부터, 아니면 지금부터 12개월 연장
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("paid_until")
+      .eq("id", userId)
+      .single();
+
+    const baseDate =
+      existing?.paid_until && new Date(existing.paid_until) > new Date()
+        ? new Date(existing.paid_until)
+        : new Date();
+
+    const newExpiry = new Date(baseDate);
+    newExpiry.setMonth(newExpiry.getMonth() + MEMBERSHIP_MONTHS);
+
     const { error: updateErr } = await supabaseAdmin
       .from("profiles")
       .update({
         is_paid: true,
         paid_at: new Date().toISOString(),
+        paid_until: newExpiry.toISOString(),
         order_id: orderId,
       })
       .eq("id", userId);
@@ -70,7 +85,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, message: "회원 정보 업데이트 실패: " + updateErr.message });
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, paidUntil: newExpiry.toISOString() });
   } catch (e) {
     return res.status(500).json({ success: false, message: e.message || "서버 오류" });
   }
