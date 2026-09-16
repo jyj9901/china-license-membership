@@ -193,6 +193,7 @@ function shuffle(arr) {
 function sectionQs() { return QUESTIONS.filter(q=>q.sec===state.section); }
 function setSection(s) { state.section = s; setMode(state.mode); }
 function setMode(m) {
+  clearTimeout(window._studyAutoAdv);
   state.mode = m; state.idx = 0; streak = 0;
   const qs = sectionQs();
   if (m === 'study') state.order = qs.map(q=>q.no);
@@ -207,9 +208,13 @@ function choose(no, picked) {
   if (picked !== q.ans) state.wrongSet.add(no); else state.wrongSet.delete(no);
   saveWrong(); saveAnswered(); render();
   if (picked === q.ans) fxCorrect(); else fxWrong();
+  clearTimeout(window._studyAutoAdv);
+  if (state.idx < state.order.length-1) {
+    window._studyAutoAdv = setTimeout(next, 900);
+  }
 }
-function next() { if (state.idx < state.order.length-1){ state.idx++; render(); } }
-function prev() { if (state.idx > 0){ state.idx--; render(); } }
+function next() { clearTimeout(window._studyAutoAdv); if (state.idx < state.order.length-1){ state.idx++; render(); } }
+function prev() { clearTimeout(window._studyAutoAdv); if (state.idx > 0){ state.idx--; render(); } }
 
 document.addEventListener('keydown', function(e) {
   const tag = (document.activeElement && document.activeElement.tagName) || '';
