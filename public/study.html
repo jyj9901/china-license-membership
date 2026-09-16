@@ -2,16 +2,18 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>중국 운전면허 문제은행</title>
 <style>
   :root {
     --bg: #0f1420; --panel:#171d2c; --panel2:#1e2536; --accent:#4f8cff;
     --accent2:#22c55e; --danger:#ef4444; --text:#e8ecf5; --muted:#8b93a7; --border:#2a3247;
   }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
-  .app { max-width:820px; margin:0 auto; padding:20px 16px 60px; }
-  h1 { font-size:19px; margin:4px 0 2px; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif; overflow-x:hidden; }
+  .app { max-width:820px; margin:0 auto; padding:20px 16px 60px; width:100%; }
+  h1 { font-size:clamp(16px,4.2vw,20px); margin:4px 0 2px; }
   .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
   .sectiontabs { display:flex; gap:8px; margin-bottom:10px; }
   .sectiontab { flex:1; text-align:center; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:10px; border-radius:10px; cursor:pointer; font-size:13.5px; font-weight:600; }
@@ -24,14 +26,15 @@
   .stat b { display:block; font-size:18px; margin-top:2px; }
   .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:14px; }
   .qno { color:var(--accent); font-size:12px; font-weight:700; margin-bottom:6px; }
-  .qtext { font-size:16px; line-height:1.55; margin-bottom:12px; white-space:pre-wrap; }
-  .qimg { max-width:100%; border-radius:10px; margin-bottom:12px; display:block; border:1px solid var(--border); }
+  .qtext { font-size:16px; line-height:1.55; margin-bottom:12px; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word; }
+  .qimg { max-width:100%; height:auto; border-radius:10px; margin-bottom:12px; display:block; border:1px solid var(--border); }
   .choices { display:flex; flex-direction:column; gap:8px; }
-  .choice { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; font-size:14.5px; display:flex; gap:8px; }
+  .choice { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; font-size:14.5px; display:flex; gap:8px; word-break:break-word; overflow-wrap:break-word; }
   .choice:hover { border-color:var(--accent); }
   .choice.correct { background:rgba(34,197,94,.18); border-color:var(--accent2); }
   .choice.wrong { background:rgba(239,68,68,.18); border-color:var(--danger); }
-  .choice b { color:var(--accent); min-width:16px; }
+  .choice b { color:var(--accent); min-width:16px; flex-shrink:0; }
+  .choice span { min-width:0; flex:1; }
   .tf-row { display:flex; gap:10px; }
   .tf-btn { flex:1; text-align:center; padding:12px; border-radius:10px; background:var(--panel2); border:1px solid var(--border); cursor:pointer; font-weight:700; }
   .tf-btn.correct { background:rgba(34,197,94,.18); border-color:var(--accent2); }
@@ -51,6 +54,7 @@
   .timer.warn { color:#ef4444; border-color:var(--danger); }
   .navgrid { display:grid; grid-template-columns:repeat(10,1fr); gap:5px; margin-bottom:14px; }
   @media (max-width:520px){ .navgrid { grid-template-columns:repeat(8,1fr); } }
+  @media (max-width:360px){ .navgrid { grid-template-columns:repeat(6,1fr); gap:4px; } }
   .navcell { text-align:center; font-size:11.5px; padding:6px 0; border-radius:7px; background:var(--panel2); border:1px solid var(--border); color:var(--muted); cursor:pointer; }
   .navcell.filled { background:#2a3b6e; color:var(--text); border-color:var(--accent); }
   .navcell.ok { background:rgba(34,197,94,.22); color:#b8f0cd; border-color:var(--accent2); }
@@ -109,10 +113,35 @@
   .fxbtn { background:var(--panel); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:14px; }
   .toprow { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
 
-  .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); }
-  .topbar .user { font-size:12px; color:var(--muted); }
-  .topbar .btn2 { background:transparent; border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:6px; }
+  .topbar .user { font-size:12px; color:var(--muted); word-break:break-all; }
+  .topbar .btn2 { background:transparent; border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; flex-shrink:0; }
   .gate-screen { text-align:center; padding:80px 20px; color:var(--muted); }
+
+  /* --- 반응형: 태블릿/PC에서는 좀 더 여유 있게, 아주 작은 폰에서는 더 촘촘하게 --- */
+  @media (min-width:768px) {
+    .app { max-width:900px; padding:32px 24px 70px; }
+    h1 { font-size:22px; }
+    .qtext { font-size:17px; }
+    .choice, .tab, .sectiontab { font-size:15px; }
+  }
+  @media (min-width:1200px) {
+    .app { max-width:960px; }
+  }
+  @media (max-width:380px) {
+    .app { padding:14px 10px 50px; }
+    .sectiontab { padding:8px 4px; font-size:12.5px; }
+    .tab { padding:7px 10px; font-size:13px; }
+    .stat { min-width:76px; padding:8px 10px; font-size:12px; }
+    .card { padding:14px; }
+    .qtext { font-size:15px; }
+    .choice { padding:9px 10px; font-size:13.5px; }
+    .rscore { font-size:36px; }
+  }
+  @media (orientation:landscape) and (max-height:480px) {
+    .app { padding-top:10px; padding-bottom:30px; }
+    .exambar { padding:9px; }
+  }
 </style>
 </head>
 <body>
