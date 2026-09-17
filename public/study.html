@@ -210,7 +210,7 @@ function choose(no, picked) {
   if (picked === q.ans) fxCorrect(); else fxWrong();
   clearTimeout(window._studyAutoAdv);
   if (state.idx < state.order.length-1) {
-    window._studyAutoAdv = setTimeout(next, 900);
+    window._studyAutoAdv = setTimeout(next, picked === q.ans ? 1300 : 2000);
   }
 }
 function next() { clearTimeout(window._studyAutoAdv); if (state.idx < state.order.length-1){ state.idx++; render(); } }
