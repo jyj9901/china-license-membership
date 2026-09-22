@@ -142,6 +142,60 @@
     .app { padding-top:10px; padding-bottom:30px; }
     .exambar { padding:9px; }
   }
+
+  /* ================= 온보딩 팝업(오버레이) ================= */
+  #onboardOverlay {
+    position:fixed; inset:0; z-index:5000; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(8,11,20,.72);
+    backdrop-filter:blur(7px) saturate(1.1); -webkit-backdrop-filter:blur(7px) saturate(1.1);
+    animation:obFadeIn .22s ease-out;
+  }
+  @keyframes obFadeIn { from{opacity:0} to{opacity:1} }
+  .onboard-modal {
+    width:100%; max-width:420px;
+    background:linear-gradient(165deg, var(--panel), var(--panel2));
+    border:1px solid var(--border); border-radius:22px;
+    padding:28px 22px 24px; text-align:center;
+    box-shadow:0 30px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03) inset;
+    animation:obPop .32s cubic-bezier(.22,.9,.3,1.25);
+  }
+  @keyframes obPop { from{ transform:translateY(22px) scale(.94); opacity:0;} to{ transform:translateY(0) scale(1); opacity:1;} }
+  .onboard-greet { font-size:19px; font-weight:800; margin-bottom:4px; }
+  .onboard-sub { color:var(--muted); font-size:13.5px; margin-bottom:20px; line-height:1.5; }
+  .onboard-tiles { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .onboard-tile {
+    --tc:#4f8cff; position:relative; overflow:hidden;
+    background:var(--panel2); border:1px solid var(--border); border-radius:16px;
+    padding:20px 10px 14px; cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .onboard-tile::before {
+    content:''; position:absolute; inset:0; background:var(--tc); opacity:.16;
+    -webkit-mask-image:radial-gradient(circle at 30% 20%, #000, transparent 70%);
+    mask-image:radial-gradient(circle at 30% 20%, #000, transparent 70%);
+    pointer-events:none;
+  }
+  .onboard-tile:hover, .onboard-tile:active {
+    transform:translateY(-3px) scale(1.03);
+    border-color:var(--tc);
+    box-shadow:0 12px 28px rgba(0,0,0,.4);
+  }
+  .ot-icon { font-size:30px; margin-bottom:8px; position:relative; filter:drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+  .ot-title { font-weight:800; font-size:14.5px; position:relative; }
+  .ot-sub { color:var(--muted); font-size:11px; margin-top:4px; position:relative; }
+  .ot-arrow {
+    position:absolute; right:10px; bottom:9px; font-size:14px; font-weight:800; color:var(--tc);
+    opacity:0; transform:translateX(-5px); transition:opacity .15s ease, transform .15s ease;
+  }
+  .onboard-tile:hover .ot-arrow { opacity:1; transform:translateX(0); }
+  .onboard-back { margin-top:16px; }
+  .onboard-hint { margin-top:16px; font-size:12px; font-weight:700; color:var(--accent); }
+  @media (max-width:380px) {
+    .onboard-modal { padding:22px 16px 20px; border-radius:18px; }
+    .ot-icon { font-size:26px; }
+    .ot-title { font-size:13.5px; }
+  }
 </style>
 </head>
 <body>
@@ -170,51 +224,81 @@ const QUESTIONS = [{"no": 1, "cat": "법규", "q": "운전 중 도로교통안�
 
 let state = { section: 1, mode: 'study', idx: 0, order: [], answered: {}, wrongSet: new Set(), loaded: false };
 
-/* ================= 로그인 직후 온보딩(부/모드 선택) ================= */
+/* ================= 로그인 직후 온보딩(부/모드 선택) — 팝업 오버레이 ================= */
 let onboardDone = false;
 let onboardStep = 'section'; // 'section' -> 'mode'
 let onboardSection = null;
 let currentUserEmail = '';
 
+const SECTION_ICON = {1:'⚖️', 2:'🚦', 3:'🛡️', 4:'🔧'};
+const SECTION_SHORTSUB = {1:'법률과 법규 · 332문제', 2:'신호와 표지 · 269문제', 3:'안전운행 · 187문제', 4:'구조와 상식 · 109문제'};
+const MODE_TILES = [
+  { m:'study', icon:'📖', title:'순서대로 학습', sub:'1번부터 차근차근', tc:'#4f8cff' },
+  { m:'random', icon:'🎲', title:'랜덤 퀴즈', sub:'무작위로 테스트', tc:'#22c55e' }
+];
+const SEC_TC = {1:'#4f8cff', 2:'#f59e0b', 3:'#ef4444', 4:'#a855f7'};
+
 function pickOnboardSection(s){
   onboardSection = s;
   onboardStep = 'mode';
-  render();
+  toggleOnboardOverlay();
 }
 function pickOnboardMode(m){
   onboardDone = true;
   state.section = onboardSection;
-  setMode(m); // setMode가 order 구성 + render()까지 처리
+  setMode(m); // setMode가 order 구성 + render()까지 처리 (오버레이는 render() 안에서 자동으로 닫힘)
 }
 function onboardBack(){
   onboardStep = 'section';
   onboardSection = null;
-  render();
+  toggleOnboardOverlay();
 }
-function renderOnboard(){
-  const app = document.getElementById('app');
+function onboardModalHtml(){
   const hour = new Date().getHours();
   const greet = hour < 12 ? '좋은 아침이에요' : (hour < 18 ? '안녕하세요' : '좋은 저녁이에요');
   const nick = currentUserEmail ? currentUserEmail.split('@')[0] : '';
-  let html = '<div class="card" style="text-align:center">';
-  html += '<div style="font-size:19px;font-weight:800;margin-bottom:6px">' + greet + (nick ? ', ' + nick + '님' : '') + '! 👋</div>';
+  let h = '<div class="onboard-modal">';
+  h += '<div class="onboard-greet">' + greet + (nick ? ', ' + nick + '님' : '') + '! 👋</div>';
   if (onboardStep === 'section') {
-    html += '<div class="sub" style="margin-bottom:18px">오늘은 어떤 부분을 공부하실 건가요?</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:10px">';
+    h += '<div class="onboard-sub">오늘은 어떤 부분을 공부하실 건가요?</div>';
+    h += '<div class="onboard-tiles">';
     [1,2,3,4].forEach(function(s){
-      html += '<button class="btn ghost" style="padding:14px;font-size:15px" onclick="pickOnboardSection(' + s + ')">' + SECTION_NAMES[s] + '</button>';
+      h += '<div class="onboard-tile" style="--tc:' + SEC_TC[s] + '" onclick="pickOnboardSection(' + s + ')">';
+      h += '<div class="ot-icon">' + SECTION_ICON[s] + '</div>';
+      h += '<div class="ot-title">' + s + '부</div>';
+      h += '<div class="ot-sub">' + SECTION_SHORTSUB[s] + '</div>';
+      h += '<div class="ot-arrow">→</div>';
+      h += '</div>';
     });
-    html += '</div>';
+    h += '</div>';
   } else {
-    html += '<div class="sub" style="margin-bottom:18px">' + SECTION_NAMES[onboardSection] + '<br>어떤 방식으로 학습하실래요?</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:10px">';
-    html += '<button class="btn" style="padding:14px;font-size:15px" onclick="pickOnboardMode(\'study\')">📖 순서대로 학습</button>';
-    html += '<button class="btn ghost" style="padding:14px;font-size:15px" onclick="pickOnboardMode(\'random\')">🎲 랜덤 퀴즈</button>';
-    html += '</div>';
-    html += '<div style="margin-top:14px"><button class="fxbtn" onclick="onboardBack()">← 다시 선택</button></div>';
+    h += '<div class="onboard-sub"><b style="color:var(--text)">' + onboardSection + '부 · ' + SECTION_SHORTSUB[onboardSection].split(' · ')[0] + '</b><br>어떤 방식으로 학습하실래요?</div>';
+    h += '<div class="onboard-tiles onboard-tiles2">';
+    MODE_TILES.forEach(function(t){
+      h += '<div class="onboard-tile" style="--tc:' + t.tc + '" onclick="pickOnboardMode(\'' + t.m + '\')">';
+      h += '<div class="ot-icon">' + t.icon + '</div>';
+      h += '<div class="ot-title">' + t.title + '</div>';
+      h += '<div class="ot-sub">' + t.sub + '</div>';
+      h += '<div class="ot-arrow">→</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+    h += '<button class="fxbtn onboard-back" onclick="onboardBack()">← 다시 선택</button>';
   }
-  html += '</div>';
-  app.innerHTML = html;
+  h += '<div class="onboard-hint">탭하면 바로 시작돼요 ✨</div>';
+  h += '</div>';
+  return h;
+}
+function toggleOnboardOverlay(){
+  let ov = document.getElementById('onboardOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'onboardOverlay';
+    document.body.appendChild(ov);
+  }
+  if (onboardDone) { ov.style.display = 'none'; ov.innerHTML = ''; return; }
+  ov.style.display = 'flex';
+  ov.innerHTML = onboardModalHtml();
 }
 
 async function loadProgress() {
@@ -602,7 +686,7 @@ function renderExam(){
 function render() {
   const app = document.getElementById('app');
   if (!state.loaded) { app.innerHTML = '<div class="empty">불러오는 중...</div>'; return; }
-  if (!onboardDone) { renderOnboard(); return; }
+  toggleOnboardOverlay();
   if (state.mode === 'exam') { renderExam(); return; }
   if (state.order.length === 0 && state.mode !== 'wrong') setMode(state.mode);
 
