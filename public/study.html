@@ -258,7 +258,7 @@ function pickOnboardMode(m){
     onboardDone = true;
     state.section = onboardSection;
     setMode(m); // setMode가 order 구성 + render()까지 처리 (오버레이는 render() 안에서 자동으로 닫힘)
-  }, 700);
+  }, 820);
 }
 function onboardBack(){
   onboardStep = 'section';
@@ -411,26 +411,50 @@ function sndTick(){ beep([1046.5], 0.05, 'triangle', 0.09); }
 function sndFanfare(){ beep([523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.51], 0.35, 'triangle', 0.22, 0.13); }
 
 /* --- 엔진음(부릉) 효과음: 온보딩 선택 때 사용 --- */
+function noiseBuffer(c, dur){
+  const n = Math.max(1, Math.floor(c.sampleRate * dur));
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
 function engineRev(startDelay, dur, freqFrom, freqTo, vol){
   const c = ac(); if (!c) return;
-  const o = c.createOscillator(), g = c.createGain();
-  o.type = 'sawtooth';
   const t0 = c.currentTime + startDelay;
+
+  // 톤 레이어: 중음역대 사각파 + 빠른 피치 스윕(엔진 회전 느낌), 로우패스로 부드럽게
+  const o = c.createOscillator(), og = c.createGain(), lp = c.createBiquadFilter();
+  o.type = 'square';
   o.frequency.setValueAtTime(freqFrom, t0);
-  o.frequency.exponentialRampToValueAtTime(freqTo, t0 + dur * 0.55);
-  o.frequency.exponentialRampToValueAtTime(Math.max(40, freqFrom * 0.85), t0 + dur);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(vol || 0.18, t0 + dur * 0.15);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  o.connect(g); g.connect(c.destination);
+  o.frequency.exponentialRampToValueAtTime(freqTo, t0 + dur * 0.5);
+  o.frequency.exponentialRampToValueAtTime(freqFrom * 0.9, t0 + dur);
+  lp.type = 'lowpass'; lp.frequency.value = 2200;
+  og.gain.setValueAtTime(0.0001, t0);
+  og.gain.exponentialRampToValueAtTime(vol * 0.55, t0 + dur * 0.12);
+  og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(lp); lp.connect(og); og.connect(c.destination);
   o.start(t0); o.stop(t0 + dur + 0.05);
+
+  // 노이즈 레이어: 배기/바람 질감 (밴드패스로 필터링해 씽씽거리는 느낌)
+  const noise = c.createBufferSource();
+  noise.buffer = noiseBuffer(c, dur);
+  const bp = c.createBiquadFilter(), ng = c.createGain();
+  bp.type = 'bandpass'; bp.Q.value = 5;
+  bp.frequency.setValueAtTime(freqFrom * 1.6, t0);
+  bp.frequency.exponentialRampToValueAtTime(freqTo * 1.6, t0 + dur * 0.5);
+  bp.frequency.exponentialRampToValueAtTime(freqFrom * 1.3, t0 + dur);
+  ng.gain.setValueAtTime(0.0001, t0);
+  ng.gain.exponentialRampToValueAtTime(vol * 0.35, t0 + dur * 0.12);
+  ng.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  noise.connect(bp); bp.connect(ng); ng.connect(c.destination);
+  noise.start(t0); noise.stop(t0 + dur + 0.05);
 }
-function sndVroom(){ if (!fxOn) return; engineRev(0, 0.42, 90, 220, 0.20); }
+function sndVroom(){ if (!fxOn) return; engineRev(0, 0.32, 170, 330, 0.22); }
 function sndVroomVroom(){
   if (!fxOn) return;
-  engineRev(0, 0.28, 90, 200, 0.18);
-  engineRev(0.26, 0.28, 100, 220, 0.19);
-  engineRev(0.54, 0.58, 110, 360, 0.22);
+  engineRev(0, 0.20, 170, 300, 0.20);
+  engineRev(0.19, 0.20, 180, 320, 0.20);
+  engineRev(0.40, 0.5, 200, 560, 0.24);
 }
 
 function fxLayer(){
