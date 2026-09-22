@@ -170,6 +170,53 @@ const QUESTIONS = [{"no": 1, "cat": "법규", "q": "운전 중 도로교통안�
 
 let state = { section: 1, mode: 'study', idx: 0, order: [], answered: {}, wrongSet: new Set(), loaded: false };
 
+/* ================= 로그인 직후 온보딩(부/모드 선택) ================= */
+let onboardDone = false;
+let onboardStep = 'section'; // 'section' -> 'mode'
+let onboardSection = null;
+let currentUserEmail = '';
+
+function pickOnboardSection(s){
+  onboardSection = s;
+  onboardStep = 'mode';
+  render();
+}
+function pickOnboardMode(m){
+  onboardDone = true;
+  state.section = onboardSection;
+  setMode(m); // setMode가 order 구성 + render()까지 처리
+}
+function onboardBack(){
+  onboardStep = 'section';
+  onboardSection = null;
+  render();
+}
+function renderOnboard(){
+  const app = document.getElementById('app');
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? '좋은 아침이에요' : (hour < 18 ? '안녕하세요' : '좋은 저녁이에요');
+  const nick = currentUserEmail ? currentUserEmail.split('@')[0] : '';
+  let html = '<div class="card" style="text-align:center">';
+  html += '<div style="font-size:19px;font-weight:800;margin-bottom:6px">' + greet + (nick ? ', ' + nick + '님' : '') + '! 👋</div>';
+  if (onboardStep === 'section') {
+    html += '<div class="sub" style="margin-bottom:18px">오늘은 어떤 부분을 공부하실 건가요?</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:10px">';
+    [1,2,3,4].forEach(function(s){
+      html += '<button class="btn ghost" style="padding:14px;font-size:15px" onclick="pickOnboardSection(' + s + ')">' + SECTION_NAMES[s] + '</button>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="sub" style="margin-bottom:18px">' + SECTION_NAMES[onboardSection] + '<br>어떤 방식으로 학습하실래요?</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:10px">';
+    html += '<button class="btn" style="padding:14px;font-size:15px" onclick="pickOnboardMode(\'study\')">📖 순서대로 학습</button>';
+    html += '<button class="btn ghost" style="padding:14px;font-size:15px" onclick="pickOnboardMode(\'random\')">🎲 랜덤 퀴즈</button>';
+    html += '</div>';
+    html += '<div style="margin-top:14px"><button class="fxbtn" onclick="onboardBack()">← 다시 선택</button></div>';
+  }
+  html += '</div>';
+  app.innerHTML = html;
+}
+
 async function loadProgress() {
   try {
     const r = await window.storage.get('wrong_set_all', false);
@@ -555,6 +602,7 @@ function renderExam(){
 function render() {
   const app = document.getElementById('app');
   if (!state.loaded) { app.innerHTML = '<div class="empty">불러오는 중...</div>'; return; }
+  if (!onboardDone) { renderOnboard(); return; }
   if (state.mode === 'exam') { renderExam(); return; }
   if (state.order.length === 0 && state.mode !== 'wrong') setMode(state.mode);
 
@@ -637,7 +685,8 @@ function render() {
   if (!result) return;
   document.getElementById('topbar').style.display = 'flex';
   const expiryDate = new Date(result.profile.paid_until).toLocaleDateString('ko-KR');
-  document.getElementById('userEmail').textContent = result.session.user.email + ' · ' + expiryDate + '까지 이용가능';
+  currentUserEmail = result.session.user.email;
+  document.getElementById('userEmail').textContent = currentUserEmail + ' · ' + expiryDate + '까지 이용가능';
   loadProgress();
   loadExamHistory();
   loadFxPref();
