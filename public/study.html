@@ -201,7 +201,10 @@
 <body>
 <div class="topbar" id="topbar" style="display:none;">
   <div class="user" id="userEmail"></div>
-  <button class="btn2" onclick="logout()">로그아웃</button>
+  <div style="display:flex;gap:6px">
+    <button class="btn2" onclick="resetProgress()">기록 초기화</button>
+    <button class="btn2" onclick="logout()">로그아웃</button>
+  </div>
 </div>
 <div class="app" id="app"><div class="gate-screen">회원 확인 중...</div></div>
 
@@ -347,6 +350,20 @@ async function loadProgress() {
 }
 async function saveWrong() { try { await window.storage.set('wrong_set_all', JSON.stringify([...state.wrongSet]), false); } catch(e){} }
 async function saveAnswered() { try { await window.storage.set('answered_map_all', JSON.stringify(state.answered), false); } catch(e){} }
+
+async function resetProgress(){
+  if (!confirm('지금까지 푼 문제 기록과 오답노트가 전부 초기화됩니다. 계속할까요?')) return;
+  state.answered = {};
+  state.wrongSet = new Set();
+  state.idx = 0;
+  state.order = [];
+  try { await window.storage.set('wrong_set_all', JSON.stringify([]), false); } catch(e){}
+  try { await window.storage.set('answered_map_all', JSON.stringify({}), false); } catch(e){}
+  onboardDone = false;
+  onboardStep = 'section';
+  onboardSection = null;
+  render();
+}
 
 function shuffle(arr) {
   const a = arr.slice();
