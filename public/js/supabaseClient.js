@@ -5,12 +5,52 @@ const SUPABASE_ANON_KEY = "sb_publishable_653wTJHWz-DttTmwCzN0dw_0Z3u38P7";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+/* ================= 1시간 미사용 시 자동 로그아웃 ================= */
+const INACTIVITY_LIMIT_MS = 60 * 60 * 1000; // 1시간
+
+function touchActivity() {
+  try { localStorage.setItem('__last_activity_ts', String(Date.now())); } catch (e) {}
+}
+
+function isInactiveTooLong() {
+  try {
+    const t = localStorage.getItem('__last_activity_ts');
+    if (!t) return false; // 기록이 없으면(첫 방문 등) 통과시킴
+    return (Date.now() - Number(t)) > INACTIVITY_LIMIT_MS;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 클릭/터치/키입력/스크롤이 있을 때마다 "마지막 활동 시각" 갱신
+['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(function (evt) {
+  document.addEventListener(evt, touchActivity, { passive: true });
+});
+touchActivity(); // 페이지를 여는 순간도 활동으로 기록
+
+// 탭을 계속 켜둔 채로 1시간 넘게 아무것도 안 하면, 새로고침 없이도 바로 로그아웃 처리
+setInterval(async function () {
+  if (isInactiveTooLong()) {
+    try { await supabaseClient.auth.signOut(); } catch (e) {}
+    if (!location.pathname.endsWith('index.html') && location.pathname !== '/') {
+      window.location.href = 'index.html';
+    }
+  }
+}, 60 * 1000); // 1분마다 체크
+
 async function requireLogin() {
+  if (isInactiveTooLong()) {
+    try { await supabaseClient.auth.signOut(); } catch (e) {}
+    window.location.href = "index.html";
+    return null;
+  }
+
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
     window.location.href = "index.html";
     return null;
   }
+  touchActivity();
   return session;
 }
 
