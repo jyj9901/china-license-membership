@@ -116,6 +116,7 @@
   .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:6px; }
   .topbar .user { font-size:12px; color:var(--muted); word-break:break-all; }
   .topbar .btn2 { background:transparent; border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; flex-shrink:0; }
+  .tabs .btn2 { background:transparent; border:1px solid var(--border); color:var(--muted); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; }
   .gate-screen { text-align:center; padding:80px 20px; color:var(--muted); }
 
   /* --- 반응형: 태블릿/PC에서는 좀 더 여유 있게, 아주 작은 폰에서는 더 촘촘하게 --- */
@@ -202,7 +203,6 @@
 <div class="topbar" id="topbar" style="display:none;">
   <div class="user" id="userEmail"></div>
   <div style="display:flex;gap:6px">
-    <button class="btn2" onclick="resetProgress()">기록 초기화</button>
     <button class="btn2" onclick="logout()">로그아웃</button>
   </div>
 </div>
@@ -809,6 +809,7 @@ function render() {
   html += '<div class="tab ' + (state.mode==='study'?'active':'') + '" onclick="setMode(\'study\')">순서대로 학습</div>';
   html += '<div class="tab ' + (state.mode==='random'?'active':'') + '" onclick="setMode(\'random\')">랜덤 퀴즈</div>';
   html += '<div class="tab ' + (state.mode==='wrong'?'active':'') + '" onclick="setMode(\'wrong\')">오답노트 (' + wrongCount + ')</div>';
+  html += '<button class="btn2" onclick="resetProgress()" style="margin-left:auto">풀어본 문제 초기화</button>';
   html += '</div>';
   html += '<div class="stats">';
   html += '<div class="stat">풀어본 문제<b>' + answeredCount + ' / ' + total + '</b></div>';
