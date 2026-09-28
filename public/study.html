@@ -49,7 +49,9 @@
   .progressbar { height:6px; background:var(--panel2); border-radius:3px; overflow:hidden; margin-bottom:14px; }
   .progressbar > div { height:100%; background:var(--accent); }
   .choice.picked, .tf-btn.picked { background:#2a3b6e; border-color:var(--accent); }
-  .examhead { display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .examhead { display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; position:sticky; top:0; z-index:20; background:var(--bg); padding:8px 0; }
+  .navtitle { margin:14px 0 6px; font-size:13px; font-weight:700; }
+  .navtitle span { font-weight:400; color:var(--muted); font-size:12px; }
   .timer { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; }
   .timer.warn { color:#ef4444; border-color:var(--danger); }
   .navgrid { display:grid; grid-template-columns:repeat(10,1fr); gap:5px; margin-bottom:14px; }
@@ -692,9 +694,14 @@ function examChoose(no, picked){
   render();
   if (first && exam.idx < exam.qs.length-1) { setTimeout(function(){ exam.idx++; render(); }, 250); }
 }
-function examGo(i){ exam.idx = i; render(); }
-function examNext(){ if (exam.idx < exam.qs.length-1){ exam.idx++; render(); } }
-function examPrev(){ if (exam.idx > 0){ exam.idx--; render(); } }
+function scrollToExamQ(){
+  const el = document.getElementById('examhead') || document.getElementById('examQ');
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 8, behavior: 'smooth' });
+}
+function examGo(i){ exam.idx = i; render(); scrollToExamQ(); }
+function examNext(){ if (exam.idx < exam.qs.length-1){ exam.idx++; render(); scrollToExamQ(); } }
+function examPrev(){ if (exam.idx > 0){ exam.idx--; render(); scrollToExamQ(); } }
 function examToggleWrong(){ exam.onlyWrong = !exam.onlyWrong; const l = examViewList(); exam.idx = l.length ? l[0] : exam.idx; render(); }
 function examViewList(){
   const out = [];
@@ -781,7 +788,7 @@ function renderExam(){
 
   if (!done) {
     const answered = Object.keys(exam.answers).length;
-    html += '<div class="examhead">';
+    html += '<div class="examhead" id="examhead">';
     html += '<div class="timer" id="examTimer">⏱ ' + fmtRemain() + '</div>';
     html += '<div class="stat" style="flex:1">푼 문제<b>' + answered + ' / ' + exam.qs.length + '</b></div>';
     html += '<button class="btn" onclick="submitExam(false)">채점하기</button>';
@@ -812,23 +819,24 @@ function renderExam(){
   }
 
   const list = examViewList();
-  html += '<div class="navgrid">';
+  let navHtml = '<div class="navtitle">문제 번호 <span>(눌러서 이동)</span></div><div class="navgrid">';
   exam.qs.forEach(function(q,i){
     if (exam.onlyWrong && exam.answers[q.no] === q.ans) return;
     let c = '';
     if (done) c = (exam.answers[q.no] === q.ans) ? 'ok' : 'ng';
     else if (exam.answers[q.no] !== undefined) c = 'filled';
     if (i === exam.idx) c += ' cur';
-    html += '<div class="navcell ' + c + '" onclick="examGo(' + i + ')">' + (i+1) + '</div>';
+    navHtml += '<div class="navcell ' + c + '" onclick="examGo(' + i + ')">' + (i+1) + '</div>';
   });
-  html += '</div>';
+  navHtml += '</div>';
 
   if (list.length === 0) {
     html += '<div class="empty">틀린 문제가 없습니다. 완벽해요! 👏</div>';
   } else {
     if (exam.onlyWrong && list.indexOf(exam.idx) === -1) exam.idx = list[0];
-    html += examQuestionHtml(exam.qs[exam.idx], exam.idx);
+    html += '<div id="examQ">' + examQuestionHtml(exam.qs[exam.idx], exam.idx) + '</div>';
   }
+  html += navHtml;
 
   if (!done) {
     html += '<div style="text-align:center;margin-top:10px"><button class="btn" onclick="submitExam(false)">채점하기</button></div>';
