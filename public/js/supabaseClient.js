@@ -32,8 +32,8 @@ touchActivity(); // 페이지를 여는 순간도 활동으로 기록
 setInterval(async function () {
   if (isInactiveTooLong()) {
     try { await supabaseClient.auth.signOut(); } catch (e) {}
-    if (!location.pathname.endsWith('index.html') && location.pathname !== '/') {
-      window.location.href = 'index.html';
+    if (!/(index|login)\.html$/.test(location.pathname) && location.pathname !== '/') {
+      window.location.href = 'login.html';
     }
   }
 }, 60 * 1000); // 1분마다 체크
@@ -41,13 +41,13 @@ setInterval(async function () {
 async function requireLogin() {
   if (isInactiveTooLong()) {
     try { await supabaseClient.auth.signOut(); } catch (e) {}
-    window.location.href = "index.html";
+    window.location.href = "login.html";
     return null;
   }
 
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
-    window.location.href = "index.html";
+    window.location.href = "login.html";
     return null;
   }
   touchActivity();
@@ -76,5 +76,5 @@ async function requirePaidMember() {
 
 async function logout() {
   await supabaseClient.auth.signOut();
-  window.location.href = "index.html";
+  window.location.href = "login.html";
 }
