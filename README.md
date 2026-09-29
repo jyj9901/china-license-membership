@@ -5,7 +5,8 @@
 ```
 project/
   public/
-    index.html            로그인 / 회원가입
+    index.html            시작 화면(소개·요금)
+    login.html            로그인 / 회원가입
     pay.html               결제 페이지 (토스페이먼츠)
     payment-success.html   결제 성공 콜백 (자동 처리, 사용자가 볼 필요 없음)
     payment-fail.html      결제 실패 페이지
@@ -41,9 +42,7 @@ project/
 
 https://usypbemegsyucdqnrfpf.supabase.co
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzeXBiZW1lZ3N5dWNkcW5yZnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2OTg2NTQsImV4cCI6MjEwMjI3NDY1NH0.whx3uxgr4Fes8LWxdd0xOl3muu1aiYjp4q0GMuBydw0
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzeXBiZW1lZ3N5dWNkcW5yZnBmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjY5ODY1NCwiZXhwIjoyMTAyMjc0NjU0fQ.rCGgA9piTBiY3MxmX9u_tjgDLptEvKf10QP40J9L5kk
 
 
 5. 이 값들을 `public/js/supabaseClient.js` 파일에 넣습니다.
