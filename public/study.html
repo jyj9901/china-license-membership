@@ -930,7 +930,15 @@ function render() {
   const result = await requirePaidMember(); // 로그인 안됨->index.html, 결제 안됨->pay.html 로 자동 이동
   if (!result) return;
   document.getElementById('topbar').style.display = 'flex';
-  const expiryDate = new Date(result.profile.paid_until).toLocaleDateString('ko-KR');
+  const paidUntilMs = new Date(result.profile.paid_until).getTime();
+  const expiryDate = new Date(paidUntilMs).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  // 문제를 풀고 있는 도중에 이용 기간이 끝나도 감지해서 결제 페이지로 보냄 (30초마다 확인)
+  setInterval(() => {
+    if (Date.now() > paidUntilMs) {
+      alert('이용 기간(3일)이 종료되었습니다. 계속 이용하려면 다시 결제해주세요.');
+      window.location.href = 'pay.html';
+    }
+  }, 30 * 1000);
   currentUserEmail = result.session.user.email;
   document.getElementById('userEmail').textContent = currentUserEmail + ' · ' + expiryDate + '까지 이용가능';
   document.getElementById('app').innerHTML = '<div class="empty">문제 불러오는 중...</div>';

@@ -52,7 +52,7 @@
 
   <div class="foot-note">
     가입 후 결제를 완료하면 전체 문제은행(연습모드 · 오답노트)을<br>이용하실 수 있습니다.<br>
-    <strong>1년 이용권 9,900원(부가세 포함) · 1회 결제 · 자동결제 없음</strong>
+    <strong>3일 이용권 20,000원(부가세 포함) · 1회 결제 · 자동결제 없음</strong>
   </div>
 </div>
 
@@ -106,9 +106,10 @@ async function doLogin() {
 
   // 결제 여부 확인 후 이동
   const { data: profile } = await supabaseClient
-    .from('profiles').select('is_paid').eq('id', data.user.id).single();
+    .from('profiles').select('paid_until').eq('id', data.user.id).single();
 
-  window.location.href = (profile && profile.is_paid) ? 'study.html' : 'pay.html';
+  const active = profile && profile.paid_until && new Date(profile.paid_until) > new Date();
+  window.location.href = active ? 'study.html' : 'pay.html';
 }
 
 async function doSignup() {
@@ -136,8 +137,8 @@ if (location.hash === '#signup') switchTab('signup');
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
     const { data: profile } = await supabaseClient
-      .from('profiles').select('is_paid').eq('id', session.user.id).single();
-    if (profile && profile.is_paid) window.location.href = 'study.html';
+      .from('profiles').select('paid_until').eq('id', session.user.id).single();
+    if (profile && profile.paid_until && new Date(profile.paid_until) > new Date()) window.location.href = 'study.html';
   }
 })();
 </script>

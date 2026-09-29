@@ -17,7 +17,7 @@
   </div>
 
   <div class="plan-card">
-    <div class="price">₩9,900 <span>/ 1년간 이용</span></div>
+    <div class="price">₩20,000 <span>/ 3일간 이용</span></div>
     <ul class="plan-list">
       <li>과목별 연습모드 전체 문제 풀이</li>
       <li>랜덤 모의고사</li>
@@ -29,13 +29,13 @@
   <div class="card">
     <div id="payment-widget"></div>
     <div id="agreement" style="margin-top:12px;"></div>
-    <button class="btn" id="payBtn" onclick="requestPayment()">₩9,900 결제하기</button>
+    <button class="btn" id="payBtn" onclick="requestPayment()">₩20,000 결제하기</button>
     <button class="btn ghost" onclick="logout()">다른 계정으로 로그인</button>
     <div class="msg" id="payMsg"></div>
   </div>
 
   <div class="foot-note">
-    1회 결제 · 결제일부터 1년간 이용 · 자동결제 없음<br>
+    1회 결제 · 결제 시점부터 3일(72시간) 이용 · 자동결제 없음<br>
     결제 후 7일 이내 미이용 시 전액 환불되며, 유료 기능을 이용한 경우 청약철회가 제한될 수 있습니다. (<a href="/refund.html" style="color:inherit;">환불 규정</a>)<br>
     테스트 환경에서는 실제 카드가 결제되지 않습니다.<br>
     결제 관련 문의는 사이트 하단 연락처로 문의해주세요.
@@ -57,7 +57,7 @@
 <script src="js/supabaseClient.js"></script>
 <script>
 const TOSS_CLIENT_KEY = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-const AMOUNT = 9900;
+const AMOUNT = 20000;
 
 let paymentWidget;
 let currentSession;
@@ -84,7 +84,7 @@ async function requestPayment() {
   try {
     await paymentWidget.requestPayment({
       orderId,
-      orderName: '중국 운전면허 문제은행 이용권',
+      orderName: '차이나 라이센스 3일 이용권',
       customerEmail: currentSession.user.email,
       successUrl: window.location.origin + '/payment-success.html',
       failUrl: window.location.origin + '/payment-fail.html',
