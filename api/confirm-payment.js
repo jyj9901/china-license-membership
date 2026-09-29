@@ -10,7 +10,7 @@ const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const MEMBERSHIP_MONTHS = 12; // 이용 기간 (개월)
+const MEMBERSHIP_DAYS = 3; // 이용 기간 (일) — 결제 승인 시점부터 72시간
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     }
     const userId = userData.user.id;
 
-    const EXPECTED_AMOUNT = 9900; // pay.html의 AMOUNT와 반드시 동일하게 유지
+    const EXPECTED_AMOUNT = 20000; // pay.html의 AMOUNT와 반드시 동일하게 유지
     if (Number(amount) !== EXPECTED_AMOUNT) {
       return res.status(400).json({ success: false, message: "결제 금액이 올바르지 않습니다" });
     }
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: tossData.message || "토스 결제 승인 실패" });
     }
 
-    // 기존 만료일이 아직 안 지났다면 그 시점부터, 아니면 지금부터 12개월 연장
+    // 기존 만료일이 아직 안 지났다면 그 시점부터, 아니면 지금부터 3일 연장
     const { data: existing } = await supabaseAdmin
       .from("profiles")
       .select("paid_until")
@@ -68,8 +68,8 @@ export default async function handler(req, res) {
         ? new Date(existing.paid_until)
         : new Date();
 
-    const newExpiry = new Date(baseDate);
-    newExpiry.setMonth(newExpiry.getMonth() + MEMBERSHIP_MONTHS);
+    // 3일 = 72시간 (달력 기준이 아니라 밀리초로 계산해서 시각까지 정확히 72시간 뒤에 만료)
+    const newExpiry = new Date(baseDate.getTime() + MEMBERSHIP_DAYS * 24 * 60 * 60 * 1000);
 
     const { error: updateErr } = await supabaseAdmin
       .from("profiles")
