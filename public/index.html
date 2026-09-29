@@ -48,6 +48,8 @@ a{color:inherit}
   animation:lane 3s linear infinite}
 @keyframes lane{to{background-position:88px center}}
 @media (prefers-reduced-motion:reduce){.lane{animation:none}}
+.lane-foot{margin-top:0;height:40px;border-top:3px solid var(--yellow);background:
+  repeating-linear-gradient(90deg,var(--white) 0 44px,transparent 44px 88px) 0 center/100% 5px no-repeat,#171a1d}
 
 /* 시험 정보 */
 section{padding:56px 0}
@@ -155,6 +157,7 @@ footer p{margin-top:10px}
   </section>
 </main>
 
+<div class="lane lane-foot" aria-hidden="true"></div>
 <footer>
   <div class="wrap">
     <div class="links">
