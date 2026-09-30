@@ -414,6 +414,12 @@
   .tabs .btn2.reset-btn:hover { background:#ffd633; }
   @media (min-width:768px) { .tabs .btn2.reset-btn { font-size:21px; } }
   @media (max-width:380px) { .tabs .btn2.reset-btn { font-size:16px; padding:10px 12px; } }
+
+  /* 제목·안내문 클릭 시 처음 화면으로 */
+  .home-link { color:inherit; text-decoration:none; cursor:pointer; display:block; }
+  .toprow > .home-link { display:block; }
+  .home-link:hover h1 { color:var(--sign); }
+  .home-link:hover .sub { color:var(--sign); text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -1059,9 +1065,9 @@ function render() {
   const correctCount = qs.filter(q=>state.answered[q.no]!==undefined && state.answered[q.no]===q.ans).length;
 
   let html = '';
-  html += '<div class="toprow"><h1 style="margin:0">🚗 중국 운전면허 문제은행 (과목1)</h1>';
+  html += '<div class="toprow"><a href="/" class="home-link" title="처음 화면으로"><h1 style="margin:0">🚗 중국 운전면허 문제은행 (과목1)</h1></a>';
   html += '<button class="fxbtn" onclick="toggleFx()">' + (fxOn ? '🔊 효과음 켬' : '🔇 효과음 끔') + '</button></div>';
-  html += '<div class="sub">전체 897문제 · 1,2,4부 사진 포함, 3부(안전운행)는 텍스트 문제</div>';
+  html += '<a href="/" class="home-link" title="처음 화면으로"><div class="sub">전체 897문제 · 1,2,4부 사진 포함, 3부(안전운행)는 텍스트 문제</div></a>';
 
   html += '<div class="exambar" onclick="openExam()">📝 모의고사 100문제 시작 (90점 이상 합격 · 45분)</div>';
   html += '<div class="sectiontabs">';
