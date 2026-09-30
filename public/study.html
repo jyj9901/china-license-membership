@@ -407,6 +407,13 @@
 
   /* 푸터 위 차선 */
   .lane-foot { background-color:#171a1d; margin-top:40px; }
+
+  /* 풀어본 문제 초기화 버튼: 오답노트 옆, 사이트 노란색 */
+  .tabs .btn2.reset-btn { background:var(--yellow); color:var(--asphalt); border:2px solid var(--asphalt);
+    font-size:19px; padding:12px 18px; border-radius:10px; cursor:pointer; margin-left:0; }
+  .tabs .btn2.reset-btn:hover { background:#ffd633; }
+  @media (min-width:768px) { .tabs .btn2.reset-btn { font-size:21px; } }
+  @media (max-width:380px) { .tabs .btn2.reset-btn { font-size:16px; padding:10px 12px; } }
 </style>
 </head>
 <body>
@@ -1067,7 +1074,7 @@ function render() {
   html += '<div class="tab ' + (state.mode==='study'?'active':'') + '" onclick="setMode(\'study\')">순서대로 학습</div>';
   html += '<div class="tab ' + (state.mode==='random'?'active':'') + '" onclick="setMode(\'random\')">랜덤 퀴즈</div>';
   html += '<div class="tab ' + (state.mode==='wrong'?'active':'') + '" onclick="setMode(\'wrong\')">오답노트 (' + wrongCount + ')</div>';
-  html += '<button class="btn2" onclick="resetProgress()" style="margin-left:auto">풀어본 문제 초기화</button>';
+  html += '<button class="btn2 reset-btn" onclick="resetProgress()">풀어본 문제 초기화</button>';
   html += '</div>';
   html += '<div class="stats">';
   html += '<div class="stat"><span class="stat-ic tried">' + ICON_TRIED + '</span>풀어본 문제<b>' + answeredCount + ' / ' + total + '</b></div>';
