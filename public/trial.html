@@ -497,6 +497,163 @@ async function loadQuestions(){
   });
 }
 
+// window.storage 셰임: localStorage 기반
+window.storage = {
+  get: async (key) => { try { const v = localStorage.getItem(key); return v === null ? null : { value: v }; } catch(e) { return null; } },
+  set: async (key, value) => { try { localStorage.setItem(key, value); return { value }; } catch(e) { return null; } }
+};
+
+/* ================= 효과음 & 시각 효과 ================= */
+let fxOn = true;
+let fxCtx = null;
+let streak = 0;
+
+async function loadFxPref(){
+  try { const r = await window.storage.get('fx_sound', false); if (r && r.value !== undefined && r.value !== null) fxOn = (r.value === 'on' || r.value === true); } catch(e) {}
+  if (QUESTIONS.length) render();
+}
+function toggleFx(){
+  fxOn = !fxOn;
+  try { window.storage.set('fx_sound', fxOn ? 'on' : 'off', false); } catch(e) {}
+  if (fxOn) beep([880], 0.10, 'triangle', 0.18);
+  render();
+}
+function ac(){
+  if (!fxCtx) { try { fxCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; } }
+  if (fxCtx && fxCtx.state === 'suspended') { try { fxCtx.resume(); } catch(e){} }
+  return fxCtx;
+}
+function tone(freq, start, dur, type, vol){
+  const c = ac(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type || 'triangle';
+  o.frequency.setValueAtTime(freq, c.currentTime + start);
+  g.gain.setValueAtTime(0.0001, c.currentTime + start);
+  g.gain.exponentialRampToValueAtTime(vol || 0.2, c.currentTime + start + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + start + dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + 0.05);
+}
+function beep(freqs, dur, type, vol, gap){
+  if (!fxOn) return;
+  freqs.forEach(function(f, i){ tone(f, i * (gap === undefined ? 0.085 : gap), dur, type, vol); });
+}
+function sndCorrect(){ beep([659.25, 830.61, 987.77, 1318.51], 0.22, 'triangle', 0.22, 0.075); }
+function sndWrong(){ beep([207.65, 155.56], 0.26, 'sine', 0.16, 0.10); }
+function sndTick(){ beep([1046.5], 0.05, 'triangle', 0.09); }
+function sndFanfare(){ beep([523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.51], 0.35, 'triangle', 0.22, 0.13); }
+
+/* --- 엔진음(부릉) 효과음: 온보딩 선택 때 사용 --- */
+function noiseBuffer(c, dur){
+  const n = Math.max(1, Math.floor(c.sampleRate * dur));
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+function engineRev(startDelay, dur, freqFrom, freqTo, vol){
+  const c = ac(); if (!c) return;
+  const t0 = c.currentTime + startDelay;
+
+  // 톤 레이어: 중음역대 사각파 + 빠른 피치 스윕(엔진 회전 느낌), 로우패스로 부드럽게
+  const o = c.createOscillator(), og = c.createGain(), lp = c.createBiquadFilter();
+  o.type = 'square';
+  o.frequency.setValueAtTime(freqFrom, t0);
+  o.frequency.exponentialRampToValueAtTime(freqTo, t0 + dur * 0.5);
+  o.frequency.exponentialRampToValueAtTime(freqFrom * 0.9, t0 + dur);
+  lp.type = 'lowpass'; lp.frequency.value = 2200;
+  og.gain.setValueAtTime(0.0001, t0);
+  og.gain.exponentialRampToValueAtTime(vol * 0.55, t0 + dur * 0.12);
+  og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(lp); lp.connect(og); og.connect(c.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+
+  // 노이즈 레이어: 배기/바람 질감 (밴드패스로 필터링해 씽씽거리는 느낌)
+  const noise = c.createBufferSource();
+  noise.buffer = noiseBuffer(c, dur);
+  const bp = c.createBiquadFilter(), ng = c.createGain();
+  bp.type = 'bandpass'; bp.Q.value = 5;
+  bp.frequency.setValueAtTime(freqFrom * 1.6, t0);
+  bp.frequency.exponentialRampToValueAtTime(freqTo * 1.6, t0 + dur * 0.5);
+  bp.frequency.exponentialRampToValueAtTime(freqFrom * 1.3, t0 + dur);
+  ng.gain.setValueAtTime(0.0001, t0);
+  ng.gain.exponentialRampToValueAtTime(vol * 0.35, t0 + dur * 0.12);
+  ng.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  noise.connect(bp); bp.connect(ng); ng.connect(c.destination);
+  noise.start(t0); noise.stop(t0 + dur + 0.05);
+}
+function sndVroom(){ if (!fxOn) return; engineRev(0, 0.32, 170, 330, 0.22); }
+function sndVroomVroom(){
+  if (!fxOn) return;
+  engineRev(0, 0.20, 170, 300, 0.20);
+  engineRev(0.19, 0.20, 180, 320, 0.20);
+  engineRev(0.40, 0.5, 200, 560, 0.24);
+}
+
+function fxLayer(){
+  let l = document.getElementById('fxlayer');
+  if (!l) { l = document.createElement('div'); l.id = 'fxlayer'; document.body.appendChild(l); }
+  return l;
+}
+const FX_COLORS = ['#f5c400','#0e7a55','#d6262b','#23272b','#ffd633','#0a5c41'];
+function confetti(n, big){
+  const l = fxLayer();
+  const cx = window.innerWidth / 2;
+  const cy = big ? window.innerHeight * 0.32 : window.innerHeight * 0.42;
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    p.className = 'fxp';
+    const ang = Math.random() * Math.PI * 2;
+    const dist = (big ? 140 : 90) + Math.random() * (big ? 260 : 170);
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.background = FX_COLORS[(Math.random() * FX_COLORS.length) | 0];
+    p.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--dy', (Math.sin(ang) * dist - 40).toFixed(1) + 'px');
+    p.style.setProperty('--rot', ((Math.random() * 720 - 360) | 0) + 'deg');
+    p.style.animationDelay = (Math.random() * 0.12).toFixed(2) + 's';
+    if (Math.random() < 0.4) p.style.borderRadius = '50%';
+    l.appendChild(p);
+    setTimeout(function(){ p.remove(); }, 1500);
+  }
+}
+function popText(txt, cls){
+  const l = fxLayer();
+  const d = document.createElement('div');
+  d.className = 'fxpop ' + (cls || '');
+  d.textContent = txt;
+  l.appendChild(d);
+  setTimeout(function(){ d.remove(); }, 1100);
+}
+function flashCard(kind){
+  const c = document.querySelector('.card');
+  if (!c) return;
+  c.classList.remove('fx-ok','fx-ng');
+  void c.offsetWidth;
+  c.classList.add(kind === 'ok' ? 'fx-ok' : 'fx-ng');
+}
+function fxCorrect(){
+  streak++;
+  sndCorrect();
+  confetti(streak >= 5 ? 34 : 22, streak >= 5);
+  let msg = '정답! 🎉';
+  if (streak >= 10) msg = streak + '연속 정답! 🔥🔥';
+  else if (streak >= 3) msg = streak + '연속 정답! 🔥';
+  popText(msg, 'ok');
+  flashCard('ok');
+}
+function fxWrong(){
+  streak = 0;
+  sndWrong();
+  popText('아쉬워요 😅', 'ng');
+  flashCard('ng');
+}
+function fxResult(pass){
+  if (pass) { sndFanfare(); confetti(70, true); popText('합격! 🎉', 'ok'); }
+  else { sndWrong(); }
+}
+
+
 function getQ(no){ return QUESTIONS.find(function(q){ return q.no === no; }); }
 
 function choose(no, picked){
@@ -505,8 +662,7 @@ function choose(no, picked){
   state.answered[no] = picked;
   saveState();
   render();
-  const card = document.querySelector('.card');
-  if (card) card.classList.add(picked === q.ans ? 'fx-ok' : 'fx-ng');
+  if (picked === q.ans) fxCorrect(); else fxWrong();
   clearTimeout(window._autoAdv);
   if (state.idx < QUESTIONS.length - 1) {
     window._autoAdv = setTimeout(next, picked === q.ans ? 1300 : 2000);
@@ -514,10 +670,18 @@ function choose(no, picked){
 }
 function next(){ clearTimeout(window._autoAdv); if (state.idx < QUESTIONS.length - 1){ state.idx++; saveState(); render(); window.scrollTo(0,0); } }
 function prev(){ clearTimeout(window._autoAdv); if (state.idx > 0){ state.idx--; saveState(); render(); window.scrollTo(0,0); } }
-function finish(){ clearTimeout(window._autoAdv); state.done = true; saveState(); render(); window.scrollTo(0,0); }
+function finish(){
+  clearTimeout(window._autoAdv); state.done = true; saveState(); render(); window.scrollTo(0,0);
+  const correct = QUESTIONS.filter(function(q){ return state.answered[q.no] === q.ans; }).length;
+  const pct = correct / QUESTIONS.length * 100;
+  if (pct >= 90) fxResult(true);
+  else if (pct >= 70) { sndFanfare(); confetti(40, true); popText('잘했어요! 👏', 'ok'); }
+  else { sndWrong(); }
+}
 function restart(){
   clearTimeout(window._autoAdv);
   state = { idx: 0, answered: {}, done: false };
+  streak = 0;
   saveState(); render(); window.scrollTo(0,0);
 }
 
@@ -569,7 +733,7 @@ function render(){
   const isLast = state.idx === total - 1;
 
   let html = '';
-  html += '<div class="toprow"><h1 style="margin:0">🚗 무료 체험 문제</h1></div>';
+  html += '<div class="toprow"><h1 style="margin:0">🚗 무료 체험 문제</h1><button class="fxbtn" onclick="toggleFx()">' + (fxOn ? '🔊 효과음 켬' : '🔇 효과음 끔') + '</button></div>';
   html += '<div class="sub">로그인 없이 20문제를 풀어보세요 · 푼 문제 ' + answeredCount + ' / ' + total + '</div>';
   html += '<div class="progressbar"><div style="width:' + Math.round(((state.idx+1)/total)*100) + '%"></div></div>';
   html += '<div class="toprow"><div class="note">' + (state.idx+1) + ' / ' + total + '</div></div>';
@@ -611,6 +775,12 @@ function render(){
   app.innerHTML = html;
 }
 
+document.addEventListener('keydown', function(e){
+  if (state.done) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+});
+
 // 이미 로그인한 사람이면 CTA를 결제/이어서 풀기로 바꿔줌
 async function adaptCta(){
   try {
@@ -630,6 +800,7 @@ async function adaptCta(){
   loadState();
   try { await loadQuestions(); } catch(e) { return; }
   render();
+  loadFxPref();
   adaptCta();
 })();
 </script>
