@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>무료 체험 | 차이나 라이센스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --asphalt:#23272b; --sign:#0e7a55; --sign-deep:#0a5c41; --yellow:#f5c400; --red:#d6262b;
+    --bg:#f2f5f3; --panel:#ffffff; --panel2:#eef2ef; --accent:#0e7a55;
+    --accent2:#0e7a55; --danger:#d6262b; --text:#1b1f22; --muted:#5b6469; --border:#d3dad6;
+    --pick:#fff3bf;
+    --display:"Black Han Sans","Noto Sans KR",sans-serif;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Noto Sans KR','Pretendard','Apple SD Gothic Neo',sans-serif; overflow-x:hidden; }
+  .app { max-width:820px; margin:0 auto; padding:20px 16px 60px; width:100%; }
+  h1 { font-size:clamp(16px,4.2vw,20px); margin:4px 0 2px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .sectiontabs { display:flex; gap:8px; margin-bottom:10px; }
+  .sectiontab { flex:1; text-align:center; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:10px; border-radius:10px; cursor:pointer; font-size:13.5px; font-weight:600; }
+  .sectiontab.active { background:var(--pick); border-color:var(--accent); }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab { background:var(--panel); border:1px solid var(--border); color:var(--text); padding:8px 14px; border-radius:10px; cursor:pointer; font-size:14px; }
+  .tab.active { background:var(--accent); border-color:var(--accent); font-weight:600; }
+  .stats { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .stat { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; flex:1; min-width:90px; text-align:center; }
+  .stat b { display:block; font-size:18px; margin-top:2px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:14px; }
+  .qno { color:var(--accent); font-size:12px; font-weight:700; margin-bottom:6px; }
+  .qtext { font-size:16px; line-height:1.55; margin-bottom:12px; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word; }
+  .qimg { max-width:100%; height:auto; border-radius:10px; margin-bottom:12px; display:block; border:1px solid var(--border); }
+  .choices { display:flex; flex-direction:column; gap:8px; }
+  .choice { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; font-size:14.5px; display:flex; gap:8px; word-break:break-word; overflow-wrap:break-word; }
+  .choice:hover { border-color:var(--accent); }
+  .choice.correct { background:rgba(14,122,85,.14); border-color:var(--accent2); }
+  .choice.wrong { background:rgba(214,38,43,.12); border-color:var(--danger); }
+  .choice b { color:var(--accent); min-width:16px; flex-shrink:0; }
+  .choice span { min-width:0; flex:1; }
+  .tf-row { display:flex; gap:10px; }
+  .tf-btn { flex:1; text-align:center; padding:12px; border-radius:10px; background:var(--panel2); border:1px solid var(--border); cursor:pointer; font-weight:700; }
+  .tf-btn.correct { background:rgba(14,122,85,.14); border-color:var(--accent2); }
+  .tf-btn.wrong { background:rgba(214,38,43,.12); border-color:var(--danger); }
+  .footer-row { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+  .btn { background:var(--accent); color:#fff; border:none; padding:9px 16px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn.ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn:disabled { opacity:.4; cursor:default; }
+  .note { color:var(--muted); font-size:12px; margin-top:8px; }
+  .badge-note { color:#f59e0b; font-size:11.5px; }
+  .empty { text-align:center; color:var(--muted); padding:40px 10px; }
+  .progressbar { height:6px; background:var(--panel2); border-radius:3px; overflow:hidden; margin-bottom:14px; }
+  .progressbar > div { height:100%; background:var(--accent); }
+  .choice.picked, .tf-btn.picked { background:var(--pick); border-color:var(--accent); }
+  .examhead { display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; position:sticky; top:0; z-index:20; background:var(--bg); padding:8px 0; }
+  .navtitle { margin:14px 0 6px; font-size:13px; font-weight:700; }
+  .navtitle span { font-weight:400; color:var(--muted); font-size:12px; }
+  .timer { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; }
+  .timer.warn { color:#d6262b; border-color:var(--danger); }
+  .navgrid { display:grid; grid-template-columns:repeat(10,1fr); gap:5px; margin-bottom:14px; }
+  @media (max-width:520px){ .navgrid { grid-template-columns:repeat(8,1fr); } }
+  @media (max-width:360px){ .navgrid { grid-template-columns:repeat(6,1fr); gap:4px; } }
+  .navcell { text-align:center; font-size:11.5px; padding:6px 0; border-radius:7px; background:var(--panel2); border:1px solid var(--border); color:var(--muted); cursor:pointer; }
+  .navcell.filled { background:var(--pick); color:var(--text); border-color:var(--accent); }
+  .navcell.ok { background:rgba(14,122,85,.16); color:#0a5c41; border-color:var(--accent2); }
+  .navcell.ng { background:rgba(214,38,43,.14); color:#9b1c20; border-color:var(--danger); }
+  .navcell.cur { outline:2px solid var(--accent); }
+  .result { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; text-align:center; }
+  .result.pass { border-color:var(--accent2); background:rgba(14,122,85,.08); }
+  .result.fail { border-color:var(--danger); background:rgba(214,38,43,.07); }
+  .rtitle { font-size:20px; font-weight:800; margin-bottom:4px; }
+  .rscore { font-size:44px; font-weight:800; line-height:1.1; }
+  .rscore span { font-size:16px; color:var(--muted); font-weight:600; }
+  .rsub { color:var(--muted); font-size:13px; margin-top:6px; }
+  .rsec { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .rsec > div { flex:1; min-width:78px; background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:8px; font-size:11.5px; color:var(--muted); }
+  .rsec b { display:block; font-size:16px; color:var(--text); margin-top:2px; }
+  .rbtns { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .history { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:12.5px; color:var(--muted); }
+  .hrow { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .hchip { padding:4px 9px; border-radius:20px; font-weight:700; font-size:12px; }
+  .hchip.p { background:rgba(14,122,85,.14); color:#0a5c41; }
+  .hchip.f { background:rgba(214,38,43,.13); color:#9b1c20; }
+  .exambar { background:linear-gradient(90deg,var(--pick),#1f4d38); border:1px solid var(--accent); color:var(--text); padding:13px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14.5px; text-align:center; margin-bottom:12px; }
+  #fxlayer { position:fixed; inset:0; pointer-events:none; z-index:9999; overflow:hidden; }
+  .fxp { position:absolute; width:9px; height:14px; opacity:0; animation:fxfly 1.25s cubic-bezier(.15,.7,.3,1) forwards; }
+  @keyframes fxfly {
+    0% { transform:translate(-50%,-50%) scale(.4) rotate(0deg); opacity:1; }
+    70% { opacity:1; }
+    100% { transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 90px)) scale(1) rotate(var(--rot)); opacity:0; }
+  }
+  .fxpop { position:absolute; left:50%; top:38%; transform:translate(-50%,-50%); font-size:26px; font-weight:800;
+           text-shadow:0 2px 0 #fff, 0 4px 18px rgba(255,255,255,.9); animation:fxpop 1.05s ease-out forwards; white-space:nowrap; }
+  .fxpop.ok { color:#0e7a55; }
+  .fxpop.ng { color:#d6262b; font-size:19px; }
+  @keyframes fxpop {
+    0% { transform:translate(-50%,-50%) scale(.5); opacity:0; }
+    22% { transform:translate(-50%,-58%) scale(1.12); opacity:1; }
+    45% { transform:translate(-50%,-58%) scale(1); opacity:1; }
+    100% { transform:translate(-50%,-115%) scale(.95); opacity:0; }
+  }
+  .card.fx-ok { animation:fxok .6s ease-out; }
+  @keyframes fxok {
+    0% { box-shadow:0 0 0 0 rgba(14,122,85,0); }
+    25% { box-shadow:0 0 0 4px rgba(14,122,85,.45); border-color:var(--accent2); }
+    100% { box-shadow:0 0 0 0 rgba(14,122,85,0); }
+  }
+  .card.fx-ng { animation:fxng .45s ease-in-out; }
+  @keyframes fxng {
+    0%,100% { transform:translateX(0); }
+    20% { transform:translateX(-7px); }
+    40% { transform:translateX(6px); }
+    60% { transform:translateX(-4px); }
+    80% { transform:translateX(3px); }
+  }
+  .choice.correct, .tf-btn.correct { animation:fxglow .5s ease-out; }
+  @keyframes fxglow { 0% { transform:scale(1); } 40% { transform:scale(1.035); } 100% { transform:scale(1); } }
+  .fxbtn { background:var(--panel); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:14px; }
+  .toprow { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+
+  .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:6px; }
+  .topbar .user { font-size:12px; color:var(--muted); word-break:break-all; }
+  .topbar .btn2 { background:transparent; border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; flex-shrink:0; }
+  .tabs .btn2 { background:transparent; border:1px solid var(--border); color:var(--muted); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; }
+  .gate-screen { text-align:center; padding:80px 20px; color:var(--muted); }
+
+  /* --- 반응형: 태블릿/PC에서는 좀 더 여유 있게, 아주 작은 폰에서는 더 촘촘하게 --- */
+  @media (min-width:768px) {
+    .app { max-width:900px; padding:32px 24px 70px; }
+    h1 { font-size:22px; }
+    .qtext { font-size:17px; }
+    .choice, .tab, .sectiontab { font-size:15px; }
+  }
+  @media (min-width:1200px) {
+    .app { max-width:960px; }
+  }
+  @media (max-width:380px) {
+    .app { padding:14px 10px 50px; }
+    .sectiontab { padding:8px 4px; font-size:12.5px; }
+    .tab { padding:7px 10px; font-size:13px; }
+    .stat { min-width:76px; padding:8px 10px; font-size:12px; }
+    .card { padding:14px; }
+    .qtext { font-size:15px; }
+    .choice { padding:9px 10px; font-size:13.5px; }
+    .rscore { font-size:36px; }
+  }
+  @media (orientation:landscape) and (max-height:480px) {
+    .app { padding-top:10px; padding-bottom:30px; }
+    .exambar { padding:9px; }
+  }
+
+  /* ================= 온보딩 팝업(오버레이) ================= */
+  #onboardOverlay {
+    position:fixed; inset:0; z-index:5000; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(35,39,43,.62);
+    backdrop-filter:blur(7px) saturate(1.1); -webkit-backdrop-filter:blur(7px) saturate(1.1);
+    animation:obFadeIn .22s ease-out;
+  }
+  @keyframes obFadeIn { from{opacity:0} to{opacity:1} }
+  .onboard-modal {
+    width:100%; max-width:420px;
+    background:var(--panel);
+    border:1px solid var(--border); border-radius:22px;
+    padding:28px 22px 24px; text-align:center;
+    box-shadow:0 30px 70px rgba(0,0,0,.35);
+    animation:obPop .32s cubic-bezier(.22,.9,.3,1.25);
+  }
+  @keyframes obPop { from{ transform:translateY(22px) scale(.94); opacity:0;} to{ transform:translateY(0) scale(1); opacity:1;} }
+  .onboard-greet { font-size:19px; font-weight:800; margin-bottom:4px; }
+  .onboard-sub { color:var(--muted); font-size:13.5px; margin-bottom:20px; line-height:1.5; }
+  .onboard-tiles { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .onboard-tile {
+    --tc:#0e7a55; position:relative; overflow:hidden;
+    background:var(--panel2); border:1px solid var(--border); border-radius:16px;
+    padding:20px 10px 14px; cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .onboard-tile::before {
+    content:''; position:absolute; inset:0; background:var(--tc); opacity:.16;
+    -webkit-mask-image:radial-gradient(circle at 30% 20%, #000, transparent 70%);
+    mask-image:radial-gradient(circle at 30% 20%, #000, transparent 70%);
+    pointer-events:none;
+  }
+  .onboard-tile:hover, .onboard-tile:active {
+    transform:translateY(-3px) scale(1.03);
+    border-color:var(--tc);
+    box-shadow:0 10px 24px rgba(0,0,0,.18);
+  }
+  .ot-icon { font-size:30px; margin-bottom:8px; position:relative; filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+  .ot-title { font-weight:800; font-size:14.5px; position:relative; }
+  .ot-sub { color:var(--muted); font-size:11px; margin-top:4px; position:relative; }
+  .ot-arrow {
+    position:absolute; right:10px; bottom:9px; font-size:14px; font-weight:800; color:var(--tc);
+    opacity:0; transform:translateX(-5px); transition:opacity .15s ease, transform .15s ease;
+  }
+  .onboard-tile:hover .ot-arrow { opacity:1; transform:translateX(0); }
+  .onboard-back { margin-top:16px; }
+  .onboard-hint { margin-top:16px; font-size:12px; font-weight:700; color:var(--accent); }
+  @media (max-width:380px) {
+    .onboard-modal { padding:22px 16px 20px; border-radius:18px; }
+    .ot-icon { font-size:26px; }
+    .ot-title { font-size:13.5px; }
+  }
+
+  /* ===== 추가: 닫기 버튼 / 섹션 아이콘 / 통계 아이콘 / 홈 버튼 / 푸터 ===== */
+  .onboard-modal { position:relative; }
+  .ob-close { position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--border); background:var(--panel); color:var(--muted); font-size:16px; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .ob-close:hover { color:var(--text); border-color:var(--accent); }
+  .sectiontab { display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.3; }
+  .sectiontab .st-ic { font-size:20px; line-height:1; }
+  .stat .stat-ic { display:block; margin:0 auto 4px; line-height:0; }
+  .stat .stat-ic svg { width:22px; height:22px; }
+  .stat .stat-ic.tried { color:var(--accent); } .stat .stat-ic.ok { color:#0e7a55; } .stat .stat-ic.ng { color:#d6262b; }
+  .topbar .home { display:inline-flex; align-items:center; gap:5px; }
+  .topbar .home svg { width:15px; height:15px; }
+  .site-footer { max-width:820px; margin:0 auto; padding:18px 16px 32px; border-top:1px solid var(--border);
+    font-size:11.5px; color:var(--muted); line-height:1.7; text-align:center; }
+  .site-footer a { color:inherit; }
+
+  /* ===== 처음 화면(고속도로 표지판) 디자인 맞춤 ===== */
+  :focus-visible { outline:3px solid var(--yellow); outline-offset:2px; }
+  h1, .rtitle, .rscore, .onboard-greet { font-family:var(--display); font-weight:400; letter-spacing:-.01em; }
+  .rtitle { font-size:24px; }
+  .topbar { background:var(--asphalt); border-bottom:none; }
+  .topbar .user { color:rgba(255,255,255,.75); }
+  .topbar .btn2 { border-color:rgba(255,255,255,.55); color:#fff; }
+  .topbar .btn2:hover { background:rgba(255,255,255,.14); }
+  .sectiontab { border:2px solid var(--asphalt); background:#fff; color:var(--asphalt); }
+  .sectiontab.active { background:var(--sign); border-color:var(--asphalt); color:#fff; }
+  .tab { border:2px solid var(--asphalt); background:#fff; color:var(--asphalt); }
+  .tab.active { background:var(--asphalt); border-color:var(--asphalt); color:#fff; }
+  .stat, .timer, .history, .fxbtn { border:2px solid var(--asphalt); background:#fff; }
+  .stat b { font-family:var(--display); font-weight:400; font-size:20px; }
+  .card, .result { border:3px solid var(--asphalt); border-radius:14px; background:#fff; }
+  .card .qno { color:var(--sign); }
+  .choice, .tf-btn { background:#fff; border:2px solid var(--border); }
+  .choice:hover { border-color:var(--asphalt); background:var(--panel2); }
+  .choice.picked, .tf-btn.picked { background:var(--pick); border-color:var(--yellow); }
+  .choice.correct, .tf-btn.correct { background:rgba(14,122,85,.14); border-color:var(--sign); }
+  .choice.wrong, .tf-btn.wrong { background:rgba(214,38,43,.10); border-color:var(--red); }
+  .choice b { color:var(--sign); }
+  .btn { background:var(--yellow); color:var(--asphalt); border:3px solid transparent; font-weight:700; border-radius:10px; }
+  .btn:hover { background:#ffd633; }
+  .btn.ghost { background:transparent; border:2px solid var(--asphalt); color:var(--asphalt); }
+  .btn.ghost:hover { background:rgba(35,39,43,.08); }
+  .progressbar { background:var(--border); height:8px; border-radius:4px; }
+  .progressbar > div { background:var(--sign); }
+  .timer.warn { color:var(--red); border-color:var(--red); }
+  .navcell { background:#fff; border:2px solid var(--border); color:var(--muted); }
+  .navcell.filled { background:var(--pick); border-color:var(--yellow); color:var(--asphalt); }
+  .navcell.cur { outline:3px solid var(--asphalt); outline-offset:0; }
+  .exambar { background:var(--sign); border:3px solid var(--asphalt); color:#fff; font-family:var(--display); font-weight:400; font-size:17px; box-shadow:0 0 0 3px #fff inset; }
+  .exambar:hover { background:var(--sign-deep); }
+  .result.pass { border-color:var(--sign); background:rgba(14,122,85,.08); }
+  .result.fail { border-color:var(--red); background:rgba(214,38,43,.07); }
+  .badge-note { color:#a86a00; }
+  .examhead { background:var(--bg); }
+  .onboard-modal { border:3px solid var(--asphalt); border-radius:20px; }
+  .onboard-tile { border:2px solid var(--asphalt); }
+  .onboard-tile::before { opacity:.22; }
+  .onboard-hint { color:var(--sign); }
+  .ob-close { background:#fff; border:2px solid var(--asphalt); color:var(--asphalt); }
+  .site-footer { background:#171a1d; color:#aab2b7; border-top:none; max-width:none; }
+  .site-footer a { color:#dfe4e7; }
+
+  /* ===== 글씨 크기 키움 (처음 화면 기준: 본문 16~18px) ===== */
+  body { font-size:16px; line-height:1.65; }
+  h1 { font-size:clamp(22px,5.4vw,30px); line-height:1.3; }
+  .sub { font-size:15px; }
+  .topbar .user { font-size:14px; }
+  .topbar .btn2, .tabs .btn2 { font-size:14px; padding:8px 14px; }
+  .sectiontab { font-size:16px; padding:12px 8px; }
+  .sectiontab .st-ic { font-size:24px; }
+  .tab { font-size:16px; padding:10px 16px; }
+  .stat { font-size:14.5px; padding:12px 14px; }
+  .stat b { font-size:24px; }
+  .card { padding:22px 20px; }
+  .qno { font-size:14px; }
+  .qtext { font-size:19px; line-height:1.6; margin-bottom:16px; }
+  .choices { gap:10px; }
+  .choice { font-size:17px; padding:14px 14px; gap:10px; line-height:1.55; }
+  .choice b { min-width:20px; }
+  .tf-btn { font-size:18px; padding:16px; }
+  .btn { font-size:16.5px; padding:12px 20px; }
+  .fxbtn { font-size:16px; }
+  .note { font-size:15px; margin-top:10px; }
+  .badge-note { font-size:13.5px; }
+  .empty { font-size:16px; }
+  .timer { font-size:20px; padding:11px 16px; }
+  .navtitle { font-size:15px; }
+  .navtitle span { font-size:13.5px; }
+  .navcell { font-size:14px; padding:9px 0; }
+  .rtitle { font-size:28px; }
+  .rscore { font-size:56px; }
+  .rscore span { font-size:19px; }
+  .rsub { font-size:15px; }
+  .rsec > div { font-size:13.5px; padding:10px; }
+  .rsec b { font-size:19px; }
+  .history { font-size:14.5px; }
+  .hchip { font-size:14px; padding:5px 11px; }
+  .exambar { font-size:19px; padding:16px; }
+  .gate-screen { font-size:16px; }
+  .onboard-greet { font-size:24px; }
+  .onboard-sub { font-size:16px; }
+  .ot-title { font-size:17px; }
+  .ot-sub { font-size:13.5px; }
+  .ot-icon { font-size:34px; }
+  .onboard-hint { font-size:14px; }
+  .site-footer { font-size:13px; }
+  @media (min-width:768px) {
+    body { font-size:17px; }
+    h1 { font-size:32px; }
+    .qtext { font-size:21px; }
+    .choice { font-size:18px; padding:16px 16px; }
+    .tab, .sectiontab { font-size:17px; }
+    .stat { font-size:15px; }
+    .stat b { font-size:26px; }
+    .btn { font-size:17px; }
+    .navcell { font-size:15px; }
+  }
+  @media (max-width:380px) {
+    .qtext { font-size:17.5px; }
+    .choice { font-size:16px; padding:12px 12px; }
+    .sectiontab { font-size:14.5px; }
+    .tab { font-size:15px; padding:9px 12px; }
+    .stat { font-size:13.5px; }
+    .rscore { font-size:46px; }
+  }
+
+  /* ===== 흐르는 차선(처음 화면과 동일) ===== */
+  .lane { height:40px; background:var(--asphalt);
+    background-image:repeating-linear-gradient(90deg,#fff 0 44px,transparent 44px 88px);
+    background-size:100% 5px; background-repeat:no-repeat; background-position:0 center;
+    animation:lane 3s linear infinite; border-top:3px solid var(--yellow); }
+  @keyframes lane { to { background-position:88px center; } }
+  @media (prefers-reduced-motion:reduce) { .lane { animation:none; } }
+
+  /* ===== 더 큼직하게 + 처음 화면의 굵은 글꼴 ===== */
+  body { font-size:18px; }
+  .tab, .sectiontab, .btn, .btn2, .stat, .exambar, .timer, .qno, .hchip, .ot-title, .fxbtn {
+    font-family:var(--display); font-weight:400; letter-spacing:-.005em;
+  }
+  .topbar .user { font-size:15px; }
+  .topbar .btn2 { font-size:16px; padding:9px 16px; }
+  .sectiontab { font-size:19px; padding:14px 8px; }
+  .tab { font-size:19px; padding:12px 18px; }
+  .tabs { gap:10px; }
+  .stats { gap:12px; }
+  .stat { font-size:19px; padding:14px 12px; min-width:104px; }
+  .stat .stat-ic svg { width:28px; height:28px; }
+  .stat b { font-size:32px; margin-top:4px; }
+  .qno { font-size:17px; }
+  .qtext { font-size:22px; font-weight:500; line-height:1.6; }
+  .choice { font-size:19px; font-weight:500; padding:16px 16px; }
+  .tf-btn { font-size:21px; padding:18px; }
+  .btn { font-size:19px; padding:14px 22px; }
+  .note { font-size:19px; font-weight:500; color:var(--text); margin-top:12px; }
+  .note b { font-family:var(--display); font-weight:400; font-size:23px; }
+  .badge-note { font-size:16px; }
+  .toprow .note { font-size:18px; font-family:var(--display); font-weight:400; color:var(--sign); }
+  .timer { font-size:23px; }
+  .navcell { font-size:17px; padding:11px 0; }
+  .navtitle { font-size:17px; }
+  .rtitle { font-size:32px; }
+  .rscore { font-size:64px; }
+  .rscore span { font-size:22px; }
+  .rsub { font-size:17px; }
+  .rsec > div { font-size:16px; }
+  .rsec b { font-size:24px; }
+  .history, .hchip { font-size:16px; }
+  .exambar { font-size:21px; }
+  .empty { font-size:18px; }
+  .onboard-greet { font-size:28px; }
+  .onboard-sub { font-size:18px; }
+  .ot-title { font-size:20px; }
+  .ot-sub { font-size:15px; }
+  .onboard-hint { font-size:16px; }
+  .site-footer { font-size:14px; }
+  @media (min-width:768px) {
+    body { font-size:19px; }
+    .qtext { font-size:25px; }
+    .choice { font-size:21px; padding:18px 18px; }
+    .tab, .sectiontab { font-size:21px; }
+    .stat { font-size:21px; }
+    .stat b { font-size:36px; }
+    .note { font-size:21px; }
+    .note b { font-size:26px; }
+    .btn { font-size:21px; }
+    .navcell { font-size:18px; }
+  }
+  @media (max-width:380px) {
+    .qtext { font-size:20px; }
+    .choice { font-size:18px; padding:14px 12px; }
+    .tab { font-size:17px; padding:10px 12px; }
+    .sectiontab { font-size:16.5px; }
+    .stat { font-size:16.5px; min-width:88px; }
+    .stat b { font-size:28px; }
+    .note { font-size:17px; }
+    .rscore { font-size:52px; }
+  }
+
+  /* 푸터 위 차선 */
+  .lane-foot { background-color:#171a1d; margin-top:40px; }
+
+  /* 풀어본 문제 초기화 버튼: 오답노트 옆, 사이트 노란색 */
+  .tabs .btn2.reset-btn { background:var(--yellow); color:var(--asphalt); border:2px solid var(--asphalt);
+    font-size:19px; padding:12px 18px; border-radius:10px; cursor:pointer; margin-left:0; }
+  .tabs .btn2.reset-btn:hover { background:#ffd633; }
+  @media (min-width:768px) { .tabs .btn2.reset-btn { font-size:21px; } }
+  @media (max-width:380px) { .tabs .btn2.reset-btn { font-size:16px; padding:10px 12px; } }
+
+  /* 제목·안내문 클릭 시 처음 화면으로 */
+  .home-link { color:inherit; text-decoration:none; cursor:pointer; display:block; }
+  .toprow > .home-link { display:block; }
+  .home-link:hover h1 { color:var(--sign); }
+  .home-link:hover .sub { color:var(--sign); text-decoration:underline; }
+
+  /* 무료 체험 전용 */
+  .topbar a.btn2 { text-decoration:none; display:inline-block; }
+  .trial-badge { display:inline-block; background:var(--yellow); color:var(--asphalt); font-weight:800; font-size:12px; padding:2px 9px; border-radius:20px; margin-right:6px; }
+  .cta-box { background:var(--asphalt); color:#fff; border-radius:14px; padding:22px 18px; margin-top:16px; text-align:center; }
+  .cta-box p { margin:0 0 14px; font-size:15px; line-height:1.6; opacity:.92; }
+  .cta-btn { display:block; width:100%; background:var(--yellow); color:var(--asphalt); font-weight:800; font-size:18px; padding:15px; border-radius:10px; text-decoration:none; border:3px solid transparent; text-align:center; cursor:pointer; }
+  .cta-btn:hover { background:#ffd633; }
+  .cta-sub { display:block; width:100%; margin-top:10px; background:transparent; color:#fff; font-weight:700; font-size:15px; padding:12px; border-radius:10px; border:2px solid rgba(255,255,255,.6); text-decoration:none; text-align:center; cursor:pointer; }
+  .cta-sub:hover { background:rgba(255,255,255,.12); }
+  .unlock-list { text-align:left; margin:0 0 16px; padding:0; list-style:none; font-size:14.5px; }
+  .unlock-list li::before { content:"✓ "; color:var(--yellow); font-weight:800; }
+  .result .rmsg { margin-top:10px; font-size:15px; color:var(--text); line-height:1.6; }
+</style>
+
+</head>
+<body>
+<div class="topbar" id="topbar">
+  <div class="user" style="font-size:13px;"><span class="trial-badge">무료 체험</span>20문제 · 로그인 없이</div>
+  <div style="display:flex;gap:6px">
+    <a class="btn2 home" href="/" aria-label="홈"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>홈</a>
+    <a class="btn2" id="topLogin" href="login.html">로그인</a>
+  </div>
+</div>
+<div class="lane" id="lane" aria-hidden="true"></div>
+<div class="app" id="app"><div class="gate-screen">체험 문제 불러오는 중...</div></div>
+
+<div class="lane lane-foot" aria-hidden="true"></div>
+<footer class="site-footer">
+  <div><a href="/terms.html">이용약관</a> · <a href="/privacy.html"><strong>개인정보처리방침</strong></a> · <a href="/refund.html">환불 규정</a></div>
+  <div style="margin-top:8px;">
+    상호: 뉴파라다이스 | 대표자: 송소영<br>
+    사업자등록번호: 580-64-00473<br>
+    통신판매업 신고번호: 제2022-고양일산서-0022호<br>
+    주소: 전남광주통합특별시 장흥군 장흥읍 순지남외길 209<br>
+    이메일: gnewparadise@gmail.com | 전화: 010-5719-8844
+  </div>
+  <div style="margin-top:8px;">© 2026 뉴파라다이스. All rights reserved.</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script>
+// 무료 체험: 로그인 없이 is_free=true 문제(20개)만 풀어보는 페이지.
+// 서버(RLS)가 is_free 문제만 내려주므로, 여기서 아무리 조작해도 유료 문제는 받을 수 없음.
+const TRIAL_KEY = 'trial_state_v1';
+let QUESTIONS = [];
+let ctaHref = 'login.html#signup';
+let ctaLabel = '전체 문제 풀어보기 · 3일 이용권';
+let state = { idx: 0, answered: {}, done: false };
+
+function saveState(){ try { localStorage.setItem(TRIAL_KEY, JSON.stringify(state)); } catch(e){} }
+function loadState(){
+  try {
+    const v = localStorage.getItem(TRIAL_KEY);
+    if (v) { const s = JSON.parse(v); if (s && typeof s === 'object') state = Object.assign(state, s); }
+  } catch(e){}
+}
+
+async function loadQuestions(){
+  const { data, error } = await supabaseClient
+    .from('questions')
+    .select('no, sec, orig_no, cat, q, choices, tf, ans, img, img_data, note')
+    .eq('is_free', true)
+    .order('no', { ascending: true });
+  if (error || !data || data.length === 0) {
+    document.getElementById('app').innerHTML =
+      '<div class="empty">체험 문제를 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.' +
+      (error ? '<br><span style="font-size:13px;color:var(--muted)">' + error.message + '</span>' : '') + '</div>';
+    throw error || new Error('no free questions');
+  }
+  QUESTIONS = data.map(function(r){
+    return { no: r.no, sec: r.sec, origNo: r.orig_no, cat: r.cat, q: r.q, choices: r.choices,
+             tf: r.tf, ans: r.ans, img: r.img, imgData: r.img_data, note: r.note };
+  });
+}
+
+function getQ(no){ return QUESTIONS.find(function(q){ return q.no === no; }); }
+
+function choose(no, picked){
+  const q = getQ(no);
+  if (state.answered[no] !== undefined) return;
+  state.answered[no] = picked;
+  saveState();
+  render();
+  const card = document.querySelector('.card');
+  if (card) card.classList.add(picked === q.ans ? 'fx-ok' : 'fx-ng');
+  clearTimeout(window._autoAdv);
+  if (state.idx < QUESTIONS.length - 1) {
+    window._autoAdv = setTimeout(next, picked === q.ans ? 1300 : 2000);
+  }
+}
+function next(){ clearTimeout(window._autoAdv); if (state.idx < QUESTIONS.length - 1){ state.idx++; saveState(); render(); window.scrollTo(0,0); } }
+function prev(){ clearTimeout(window._autoAdv); if (state.idx > 0){ state.idx--; saveState(); render(); window.scrollTo(0,0); } }
+function finish(){ clearTimeout(window._autoAdv); state.done = true; saveState(); render(); window.scrollTo(0,0); }
+function restart(){
+  clearTimeout(window._autoAdv);
+  state = { idx: 0, answered: {}, done: false };
+  saveState(); render(); window.scrollTo(0,0);
+}
+
+function renderResult(){
+  const total = QUESTIONS.length;
+  const correct = QUESTIONS.filter(function(q){ return state.answered[q.no] === q.ans; }).length;
+  const pct = Math.round(correct / total * 100);
+  const pass = pct >= 90;
+  let html = '';
+  html += '<div class="result ' + (pass ? 'pass' : 'fail') + '">';
+  html += '<div style="font-size:14px;color:var(--muted);margin-bottom:6px;">무료 체험 결과</div>';
+  html += '<div class="rscore">' + correct + '<span> / ' + total + '</span></div>';
+  html += '<div class="rmsg">정답률 ' + pct + '%<br>실제 시험은 100문제 중 <b>90점 이상</b>이 합격이에요.<br>' +
+          (pass ? '좋은 출발이에요! 전체 문제로 마무리해볼까요? 🎉' : '틀린 문제는 전체 문제은행에서 오답노트로 모아 다시 풀 수 있어요.') + '</div>';
+  html += '</div>';
+
+  html += '<div class="cta-box">';
+  html += '<ul class="unlock-list">' +
+          '<li>전체 897문제 (1~4부)</li>' +
+          '<li>모의고사 100문제 · 45분</li>' +
+          '<li>오답노트로 틀린 문제만 복습</li>' +
+          '</ul>';
+  html += '<p>3일(72시간) 이용권 <b>20,000원</b> · 1회 결제, 자동결제 없음</p>';
+  html += '<a class="cta-btn" href="' + ctaHref + '">' + ctaLabel + '</a>';
+  html += '<a class="cta-sub" href="javascript:void(0)" onclick="restart()">체험 다시 풀기</a>';
+  html += '</div>';
+
+  html += '<div class="card" style="margin-top:16px;"><div style="font-weight:700;margin-bottom:8px;">푼 문제 한눈에 보기</div><div class="note" style="margin:0 0 8px;">초록 = 정답, 빨강 = 오답, 회색 = 안 푼 문제</div><div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  QUESTIONS.forEach(function(q, i){
+    const p = state.answered[q.no];
+    const bg = p === undefined ? '#cfd6d2' : (p === q.ans ? '#0e7a55' : '#d6262b');
+    html += '<button onclick="goTo(' + i + ')" style="width:38px;height:38px;border-radius:8px;border:none;background:' + bg + ';color:#fff;font-weight:700;cursor:pointer;">' + (i+1) + '</button>';
+  });
+  html += '</div></div>';
+  document.getElementById('app').innerHTML = html;
+}
+function goTo(i){ clearTimeout(window._autoAdv); state.done = false; state.idx = i; saveState(); render(); window.scrollTo(0,0); }
+
+function render(){
+  const app = document.getElementById('app');
+  if (!QUESTIONS.length) return;
+  if (state.done) { renderResult(); return; }
+  if (state.idx >= QUESTIONS.length) state.idx = 0;
+
+  const total = QUESTIONS.length;
+  const answeredCount = QUESTIONS.filter(function(q){ return state.answered[q.no] !== undefined; }).length;
+  const q = QUESTIONS[state.idx];
+  const picked = state.answered[q.no];
+  const isLast = state.idx === total - 1;
+
+  let html = '';
+  html += '<div class="toprow"><h1 style="margin:0">🚗 무료 체험 문제</h1></div>';
+  html += '<div class="sub">로그인 없이 20문제를 풀어보세요 · 푼 문제 ' + answeredCount + ' / ' + total + '</div>';
+  html += '<div class="progressbar"><div style="width:' + Math.round(((state.idx+1)/total)*100) + '%"></div></div>';
+  html += '<div class="toprow"><div class="note">' + (state.idx+1) + ' / ' + total + '</div></div>';
+  html += '<div class="card">';
+  html += '<div class="qno">문제 ' + q.origNo + '번' + (q.cat ? ' · ' + q.cat : '') + '</div>';
+  html += '<div class="qtext">' + q.q + '</div>';
+  if (q.imgData) html += '<img class="qimg" src="data:image/jpeg;base64,' + q.imgData + '">';
+  else if (q.img) html += '<div class="badge-note">🖼 ' + q.img + ' (이미지 준비중)</div>';
+
+  if (q.tf) {
+    html += '<div class="tf-row">';
+    ['Y','N'].forEach(function(v){
+      let cls = '';
+      if (picked) { if (v === q.ans) cls = 'correct'; else if (v === picked) cls = 'wrong'; }
+      html += '<div class="tf-btn ' + cls + '" onclick="' + (picked ? '' : 'choose(' + q.no + ',\'' + v + '\')') + '">' + (v === 'Y' ? '⭕ 맞다 (Y)' : '❌ 틀리다 (N)') + '</div>';
+    });
+    html += '</div>';
+  } else if (q.choices) {
+    html += '<div class="choices">';
+    Object.keys(q.choices).forEach(function(k){
+      let cls = '';
+      if (picked) { if (k === q.ans) cls = 'correct'; else if (k === picked) cls = 'wrong'; }
+      html += '<div class="choice ' + cls + '" onclick="' + (picked ? '' : 'choose(' + q.no + ',\'' + k + '\')') + '"><b>' + k + '</b><span>' + q.choices[k] + '</span></div>';
+    });
+    html += '</div>';
+  }
+  if (picked) {
+    html += '<div class="note">정답: <b style="color:#0e7a55">' + q.ans + '</b>' + (picked === q.ans ? ' · 정답입니다! 🎉' : ' · 아쉬워요, 다음 문제로!') + '</div>';
+  }
+  if (q.note) html += '<div class="badge-note">⚠ ' + q.note + '</div>';
+  html += '<div class="footer-row">';
+  html += '<button class="btn ghost" onclick="prev()" ' + (state.idx === 0 ? 'disabled' : '') + '>← 이전</button>';
+  if (isLast) html += '<button class="btn" onclick="finish()">결과 보기 →</button>';
+  else html += '<button class="btn" onclick="next()">다음 →</button>';
+  html += '</div></div>';
+  if (answeredCount === total && !isLast) {
+    html += '<div style="text-align:center;margin-top:6px;"><button class="btn" onclick="finish()">다 풀었어요! 결과 보기</button></div>';
+  }
+  app.innerHTML = html;
+}
+
+// 이미 로그인한 사람이면 CTA를 결제/이어서 풀기로 바꿔줌
+async function adaptCta(){
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+    const login = document.getElementById('topLogin');
+    if (login) { login.textContent = '내 학습'; login.href = 'study.html'; }
+    const { data: p } = await supabaseClient.from('profiles').select('paid_until').eq('id', session.user.id).single();
+    const active = p && p.paid_until && new Date(p.paid_until) > new Date();
+    ctaHref = active ? 'study.html' : 'pay.html';
+    ctaLabel = active ? '전체 문제 이어서 풀기' : '결제하고 전체 문제 풀기';
+    if (state.done) render();
+  } catch(e){}
+}
+
+(async () => {
+  loadState();
+  try { await loadQuestions(); } catch(e) { return; }
+  render();
+  adaptCta();
+})();
+</script>
+</body>
+</html>
