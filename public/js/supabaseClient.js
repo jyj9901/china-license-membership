@@ -32,7 +32,7 @@ touchActivity(); // 페이지를 여는 순간도 활동으로 기록
 setInterval(async function () {
   if (isInactiveTooLong()) {
     try { await supabaseClient.auth.signOut(); } catch (e) {}
-    if (!/(index|login)\.html$/.test(location.pathname) && location.pathname !== '/') {
+    if (!/(index|login|trial)\.html$/.test(location.pathname) && location.pathname !== '/') {
       window.location.href = 'login.html';
     }
   }
